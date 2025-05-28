@@ -1,0 +1,153 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Novo Registro de Ponto - Sistema de Controle de Ponto{% endblock %}
+
+{% block extra_css %}
+<style>
+  .period-container {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: relative;
+  }
+  .period-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .remove-period {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  .add-period-btn {
+    margin-bottom: 20px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Novo Registro de Ponto</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('time_record.list_time_records') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form id="timeRecordForm" action="{{ url_for('time_record.create_time_record') }}" method="post">
+                    <div class="mb-3">
+                        <label for="employee_id" class="form-label">Funcionário</label>
+                        <select class="form-select" id="employee_id" name="employee_id" required>
+                            <option value="">Selecione um funcionário</option>
+                            {% for employee in employees %}
+                                <option value="{{ employee.id }}" {% if request.args.get('employee_id')|int == employee.id %}selected{% endif %}>{{ employee.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Data</label>
+                        <input type="date" class="form-control" id="date" name="date" value="{{ today }}" required>
+                    </div>
+                    
+                    <div id="periods-container">
+                        <!-- Período Regular (Jornada Normal) -->
+                        <div class="period-container" id="period-0">
+                            <div class="period-header">
+                                <h5>Período Regular</h5>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="entry_time_0" class="form-label">Horário de Entrada</label>
+                                    <input type="time" class="form-control" id="entry_time_0" name="periods[0][entry_time]">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="exit_time_0" class="form-label">Horário de Saída</label>
+                                    <input type="time" class="form-control" id="exit_time_0" name="periods[0][exit_time]">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="lunch_start_0" class="form-label">Horário de Saída para Almoço</label>
+                                    <input type="time" class="form-control" id="lunch_start_0" name="periods[0][lunch_start]">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="lunch_end_0" class="form-label">Horário de Retorno do Almoço</label>
+                                    <input type="time" class="form-control" id="lunch_end_0" name="periods[0][lunch_end]">
+                                </div>
+                            </div>
+                            <input type="hidden" name="periods[0][period_type]" value="regular">
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="addPeriodBtn" class="btn btn-outline-primary add-period-btn">
+                        <i class="bi bi-plus-circle"></i> Adicionar Período Adicional
+                    </button>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let periodCounter = 1;
+        
+        // Adicionar novo período
+        document.getElementById('addPeriodBtn').addEventListener('click', function() {
+            const periodsContainer = document.getElementById('periods-container');
+            const newPeriod = document.createElement('div');
+            newPeriod.className = 'period-container';
+            newPeriod.id = `period-${periodCounter}`;
+            
+            newPeriod.innerHTML = `
+                <div class="period-header">
+                    <h5>Período Adicional ${periodCounter}</h5>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-period" onclick="removePeriod(${periodCounter})">
+                        <i class="bi bi-trash"></i> Remover
+                    </button>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="entry_time_${periodCounter}" class="form-label">Horário de Entrada</label>
+                        <input type="time" class="form-control" id="entry_time_${periodCounter}" name="periods[${periodCounter}][entry_time]" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="exit_time_${periodCounter}" class="form-label">Horário de Saída</label>
+                        <input type="time" class="form-control" id="exit_time_${periodCounter}" name="periods[${periodCounter}][exit_time]" required>
+                    </div>
+                </div>
+                <input type="hidden" name="periods[${periodCounter}][period_type]" value="extra">
+            `;
+            
+            periodsContainer.appendChild(newPeriod);
+            periodCounter++;
+        });
+        
+        // Função para remover período
+        window.removePeriod = function(id) {
+            const periodElement = document.getElementById(`period-${id}`);
+            if (periodElement) {
+                periodElement.remove();
+            }
+        };
+    });
+</script>
+{% endblock %}

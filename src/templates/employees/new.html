@@ -1,0 +1,48 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Novo Funcionário - Sistema de Controle de Ponto{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Novo Funcionário</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('employee.list_employees') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form action="{{ url_for('employee.create_employee') }}" method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="salary" class="form-label">Salário (R$)</label>
+                        <input type="number" class="form-control" id="salary" name="salary" step="0.01" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="workday_start" class="form-label">Início da Jornada</label>
+                        <input type="time" class="form-control" id="workday_start" name="workday_start" value="09:00" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="workday_end" class="form-label">Fim da Jornada</label>
+                        <input type="time" class="form-control" id="workday_end" name="workday_end" value="18:00" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="lunch_duration" class="form-label">Duração do Almoço (minutos)</label>
+                        <input type="number" class="form-control" id="lunch_duration" name="lunch_duration" value="60" min="0" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

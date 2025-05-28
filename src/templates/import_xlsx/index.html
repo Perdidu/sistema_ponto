@@ -1,0 +1,191 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Importar Registros de Horas Extras{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Importar Registros de Horas Extras</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Instruções</h5>
+        </div>
+        <div class="card-body">
+            <p>Utilize esta página para importar registros de horas extras.</p>
+            <p>Preencha os dados diretamente no formulário abaixo:</p>
+            <ul>
+                <li><strong>Nome Funcionário</strong>: Nome completo do funcionário (deve existir no sistema)</li>
+                <li><strong>Data</strong>: Data no formato DD/MM/YY</li>
+                <li><strong>Hora Extra Inicial</strong>: Horário de início no formato HH:MM</li>
+                <li><strong>Hora Extra Final</strong>: Horário de término no formato HH:MM</li>
+            </ul>
+            
+            <div class="alert alert-info">
+                <h6>Exemplo:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Nome Funcionário</th>
+                                <th>Data</th>
+                                <th>Hora Extra Inicial</th>
+                                <th>Hora Extra Final</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>João Silva</td>
+                                <td>01/03/25</td>
+                                <td>03:00</td>
+                                <td>06:00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Entrada Manual de Dados</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('import_xlsx.process_manual') }}" method="post">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="employee_name" class="form-label">Nome do Funcionário</label>
+                        <input type="text" class="form-control" id="employee_name" name="employee_name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="date" class="form-label">Data (DD/MM/YY)</label>
+                        <input type="text" class="form-control" id="date" name="date" placeholder="01/03/25" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="start_time" class="form-label">Hora Extra Inicial (HH:MM)</label>
+                        <input type="text" class="form-control" id="start_time" name="start_time" placeholder="03:00" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="end_time" class="form-label">Hora Extra Final (HH:MM)</label>
+                        <input type="text" class="form-control" id="end_time" name="end_time" placeholder="06:00" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Salvar Registro
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Entrada Múltipla de Dados</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('import_xlsx.process_multiple') }}" method="post">
+                <div class="mb-3">
+                    <label for="multiple_data" class="form-label">Cole os dados da planilha (uma linha por registro)</label>
+                    <textarea class="form-control" id="multiple_data" name="multiple_data" rows="6" placeholder="João Silva,01/03/25,03:00,06:00&#10;Maria Santos,02/03/25,22:00,23:59" required></textarea>
+                    <div class="form-text">Formato: Nome Funcionário,Data,Hora Extra Inicial,Hora Extra Final</div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Processar Dados
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    {% if import_results %}
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Resultado da Importação</h5>
+            <span class="badge bg-success">{{ import_results.success_count }} registros importados</span>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-success">
+                <h6><i class="bi bi-check-circle-fill"></i> Importação concluída com sucesso!</h6>
+                <p>Total de registros processados: {{ import_results.total_count }}</p>
+                <p>Registros importados com sucesso: {{ import_results.success_count }}</p>
+                <p>Registros ignorados: {{ import_results.ignored_count }}</p>
+            </div>
+            
+            <a href="{{ url_for('time_record.list_time_records') }}" class="btn btn-primary">
+                <i class="bi bi-clock"></i> Ver Registros de Ponto
+            </a>
+            <a href="{{ url_for('import_xlsx.index') }}" class="btn btn-outline-primary">
+                <i class="bi bi-upload"></i> Nova Importação
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if preview_data %}
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Pré-visualização dos Dados</h5>
+            <span class="badge bg-info">{{ preview_data|length }} registros encontrados</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nome Funcionário</th>
+                            <th>Data</th>
+                            <th>Hora Extra Inicial</th>
+                            <th>Hora Extra Final</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in preview_data %}
+                        <tr class="{% if row.status == 'error' %}table-danger{% elif row.status == 'warning' %}table-warning{% else %}table-success{% endif %}">
+                            <td>{{ row.employee_name }}</td>
+                            <td>{{ row.date }}</td>
+                            <td>{{ row.start_time }}</td>
+                            <td>{{ row.end_time }}</td>
+                            <td>
+                                {% if row.status == 'error' %}
+                                <span class="text-danger">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> {{ row.message }}
+                                </span>
+                                {% elif row.status == 'warning' %}
+                                <span class="text-warning">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ row.message }}
+                                </span>
+                                {% else %}
+                                <span class="text-success">
+                                    <i class="bi bi-check-circle-fill"></i> Válido
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-3">
+                <form action="{{ url_for('import_xlsx.process_import') }}" method="post">
+                    <input type="hidden" name="session_id" value="{{ session_id }}">
+                    <button type="submit" class="btn btn-success" {% if has_errors %}disabled{% endif %}>
+                        <i class="bi bi-check-lg"></i> Confirmar Importação
+                    </button>
+                    <a href="{{ url_for('import_xlsx.index') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </a>
+                </form>
+                
+                {% if has_errors %}
+                <div class="alert alert-danger mt-3">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Existem erros nos dados. Corrija e tente novamente.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

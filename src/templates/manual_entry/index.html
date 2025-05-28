@@ -1,0 +1,411 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Entrada Manual de Registros{% endblock %}
+
+{% block styles %}
+<style>
+    .table-editable {
+        position: relative;
+    }
+    
+    .table-editable .table-add {
+        margin-bottom: 10px;
+    }
+    
+    .table-remove {
+        color: #dc3545;
+        cursor: pointer;
+    }
+    
+    .table-remove:hover {
+        color: #bd2130;
+    }
+    
+    .table-editable input {
+        border: none;
+        background-color: transparent;
+        width: 100%;
+        padding: 5px;
+    }
+    
+    .table-editable input:focus {
+        outline: none;
+        background-color: #f8f9fa;
+    }
+    
+    .table-editable tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .invalid-feedback {
+        display: none;
+        color: #dc3545;
+        font-size: 80%;
+    }
+    
+    .is-invalid + .invalid-feedback {
+        display: block;
+    }
+    
+    .is-invalid {
+        border-bottom: 1px solid #dc3545 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Entrada Manual de Registros de Horas Extras</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Instruções</h5>
+        </div>
+        <div class="card-body">
+            <p>Utilize esta página para inserir manualmente os registros de horas extras da sua planilha.</p>
+            <p>Você pode adicionar, editar e remover linhas diretamente na tabela abaixo.</p>
+            <ul>
+                <li><strong>Nome Funcionário</strong>: Nome completo do funcionário (deve existir no sistema)</li>
+                <li><strong>Data</strong>: Data no formato DD/MM/YY</li>
+                <li><strong>Hora Extra Inicial</strong>: Horário de início no formato HH:MM</li>
+                <li><strong>Hora Extra Final</strong>: Horário de término no formato HH:MM</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Tabela de Registros</h5>
+            <button id="btn-add-row" class="btn btn-sm btn-primary">
+                <i class="bi bi-plus-lg"></i> Adicionar Linha
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive table-editable">
+                <table class="table table-bordered table-hover" id="table-records">
+                    <thead>
+                        <tr>
+                            <th>Nome Funcionário</th>
+                            <th>Data (DD/MM/YY)</th>
+                            <th>Hora Extra Inicial (HH:MM)</th>
+                            <th>Hora Extra Final (HH:MM)</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="record-row">
+                            <td>
+                                <input type="text" name="employee_name" class="form-control-plaintext" placeholder="Ex: João Silva">
+                                <div class="invalid-feedback"></div>
+                            </td>
+                            <td>
+                                <input type="text" name="date" class="form-control-plaintext" placeholder="Ex: 01/03/25">
+                                <div class="invalid-feedback"></div>
+                            </td>
+                            <td>
+                                <input type="text" name="start_time" class="form-control-plaintext" placeholder="Ex: 03:00">
+                                <div class="invalid-feedback"></div>
+                            </td>
+                            <td>
+                                <input type="text" name="end_time" class="form-control-plaintext" placeholder="Ex: 06:00">
+                                <div class="invalid-feedback"></div>
+                            </td>
+                            <td class="text-center">
+                                <span class="table-remove">
+                                    <i class="bi bi-trash text-danger"></i>
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-3">
+                <button id="btn-save-all" class="btn btn-success">
+                    <i class="bi bi-save"></i> Salvar Todos os Registros
+                </button>
+                <button id="btn-clear-all" class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-x-lg"></i> Limpar Tabela
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="result-container" class="d-none">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Resultado da Operação</h5>
+                <span id="result-badge" class="badge bg-success">0 registros salvos</span>
+            </div>
+            <div class="card-body">
+                <div id="result-alert" class="alert alert-success">
+                    <h6><i class="bi bi-check-circle-fill"></i> <span id="result-title">Operação concluída com sucesso!</span></h6>
+                    <p>Total de registros processados: <span id="result-total">0</span></p>
+                    <p>Registros salvos com sucesso: <span id="result-success">0</span></p>
+                    <p>Registros ignorados: <span id="result-ignored">0</span></p>
+                </div>
+                
+                <a href="{{ url_for('time_record.list_time_records') }}" class="btn btn-primary">
+                    <i class="bi bi-clock"></i> Ver Registros de Ponto
+                </a>
+                <button id="btn-new-batch" class="btn btn-outline-primary">
+                    <i class="bi bi-plus-lg"></i> Inserir Mais Registros
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos da página
+        const tableBody = document.querySelector('#table-records tbody');
+        const btnAddRow = document.querySelector('#btn-add-row');
+        const btnSaveAll = document.querySelector('#btn-save-all');
+        const btnClearAll = document.querySelector('#btn-clear-all');
+        const btnNewBatch = document.querySelector('#btn-new-batch');
+        const resultContainer = document.querySelector('#result-container');
+        const resultBadge = document.querySelector('#result-badge');
+        const resultAlert = document.querySelector('#result-alert');
+        const resultTitle = document.querySelector('#result-title');
+        const resultTotal = document.querySelector('#result-total');
+        const resultSuccess = document.querySelector('#result-success');
+        const resultIgnored = document.querySelector('#result-ignored');
+        
+        // Função para adicionar uma nova linha na tabela
+        function addNewRow() {
+            const newRow = document.createElement('tr');
+            newRow.className = 'record-row';
+            newRow.innerHTML = `
+                <td>
+                    <input type="text" name="employee_name" class="form-control-plaintext" placeholder="Ex: João Silva">
+                    <div class="invalid-feedback"></div>
+                </td>
+                <td>
+                    <input type="text" name="date" class="form-control-plaintext" placeholder="Ex: 01/03/25">
+                    <div class="invalid-feedback"></div>
+                </td>
+                <td>
+                    <input type="text" name="start_time" class="form-control-plaintext" placeholder="Ex: 03:00">
+                    <div class="invalid-feedback"></div>
+                </td>
+                <td>
+                    <input type="text" name="end_time" class="form-control-plaintext" placeholder="Ex: 06:00">
+                    <div class="invalid-feedback"></div>
+                </td>
+                <td class="text-center">
+                    <span class="table-remove">
+                        <i class="bi bi-trash text-danger"></i>
+                    </span>
+                </td>
+            `;
+            tableBody.appendChild(newRow);
+            
+            // Focar no primeiro campo da nova linha
+            const firstInput = newRow.querySelector('input');
+            if (firstInput) {
+                firstInput.focus();
+            }
+            
+            // Adicionar evento de remoção para a nova linha
+            const removeBtn = newRow.querySelector('.table-remove');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', function() {
+                    newRow.remove();
+                });
+            }
+        }
+        
+        // Adicionar eventos de remoção para as linhas existentes
+        document.querySelectorAll('.table-remove').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                row.remove();
+            });
+        });
+        
+        // Evento para adicionar nova linha
+        btnAddRow.addEventListener('click', addNewRow);
+        
+        // Evento para limpar a tabela
+        btnClearAll.addEventListener('click', function() {
+            if (confirm('Tem certeza que deseja limpar todos os registros da tabela?')) {
+                // Manter apenas uma linha vazia
+                tableBody.innerHTML = '';
+                addNewRow();
+            }
+        });
+        
+        // Evento para iniciar nova entrada após salvar
+        btnNewBatch.addEventListener('click', function() {
+            resultContainer.classList.add('d-none');
+            tableBody.innerHTML = '';
+            addNewRow();
+        });
+        
+        // Função para validar um registro
+        function validateRecord(record) {
+            let isValid = true;
+            let errors = {};
+            
+            // Validar nome do funcionário
+            if (!record.employee_name.trim()) {
+                errors.employee_name = 'Nome do funcionário é obrigatório';
+                isValid = false;
+            }
+            
+            // Validar data
+            if (!record.date.trim()) {
+                errors.date = 'Data é obrigatória';
+                isValid = false;
+            } else {
+                // Verificar formato da data (DD/MM/YY)
+                const dateRegex = /^(\d{2})\/(\d{2})\/(\d{2}|\d{4})$/;
+                if (!dateRegex.test(record.date.trim())) {
+                    errors.date = 'Formato de data inválido. Use DD/MM/YY';
+                    isValid = false;
+                }
+            }
+            
+            // Validar hora inicial
+            if (!record.start_time.trim()) {
+                errors.start_time = 'Hora inicial é obrigatória';
+                isValid = false;
+            } else {
+                // Verificar formato da hora (HH:MM)
+                const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+                if (!timeRegex.test(record.start_time.trim())) {
+                    errors.start_time = 'Formato de hora inválido. Use HH:MM';
+                    isValid = false;
+                }
+            }
+            
+            // Validar hora final
+            if (!record.end_time.trim()) {
+                errors.end_time = 'Hora final é obrigatória';
+                isValid = false;
+            } else {
+                // Verificar formato da hora (HH:MM)
+                const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+                if (!timeRegex.test(record.end_time.trim())) {
+                    errors.end_time = 'Formato de hora inválido. Use HH:MM';
+                    isValid = false;
+                }
+            }
+            
+            return { isValid, errors };
+        }
+        
+        // Função para coletar dados da tabela
+        function collectTableData() {
+            const rows = document.querySelectorAll('.record-row');
+            const records = [];
+            let allValid = true;
+            
+            // Limpar validações anteriores
+            document.querySelectorAll('.is-invalid').forEach(function(el) {
+                el.classList.remove('is-invalid');
+            });
+            
+            rows.forEach(function(row) {
+                const record = {
+                    employee_name: row.querySelector('input[name="employee_name"]').value,
+                    date: row.querySelector('input[name="date"]').value,
+                    start_time: row.querySelector('input[name="start_time"]').value,
+                    end_time: row.querySelector('input[name="end_time"]').value
+                };
+                
+                // Validar o registro
+                const { isValid, errors } = validateRecord(record);
+                
+                if (!isValid) {
+                    allValid = false;
+                    
+                    // Marcar campos com erro
+                    for (const field in errors) {
+                        const input = row.querySelector(`input[name="${field}"]`);
+                        const feedback = input.nextElementSibling;
+                        
+                        input.classList.add('is-invalid');
+                        feedback.textContent = errors[field];
+                    }
+                }
+                
+                records.push(record);
+            });
+            
+            return { records, allValid };
+        }
+        
+        // Evento para salvar todos os registros
+        btnSaveAll.addEventListener('click', function() {
+            const { records, allValid } = collectTableData();
+            
+            if (!allValid) {
+                alert('Por favor, corrija os erros nos campos destacados antes de salvar.');
+                return;
+            }
+            
+            if (records.length === 0) {
+                alert('Não há registros para salvar.');
+                return;
+            }
+            
+            // Desabilitar botão durante o salvamento
+            btnSaveAll.disabled = true;
+            btnSaveAll.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
+            
+            // Enviar dados para o servidor
+            fetch('{{ url_for("manual_entry.save_table_data") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() if csrf_token else "" }}'
+                },
+                body: JSON.stringify({ records: records })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao salvar os registros');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Exibir resultados
+                resultContainer.classList.remove('d-none');
+                resultBadge.textContent = `${data.success_count} registros salvos`;
+                resultBadge.className = data.success_count > 0 ? 'badge bg-success' : 'badge bg-warning';
+                
+                resultAlert.className = data.success_count > 0 ? 'alert alert-success' : 'alert alert-warning';
+                resultTitle.textContent = data.success_count > 0 ? 'Operação concluída com sucesso!' : 'Operação concluída com avisos';
+                
+                resultTotal.textContent = data.total_count;
+                resultSuccess.textContent = data.success_count;
+                resultIgnored.textContent = data.ignored_count;
+                
+                // Rolar para os resultados
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+                
+                // Reabilitar botão
+                btnSaveAll.disabled = false;
+                btnSaveAll.innerHTML = '<i class="bi bi-save"></i> Salvar Todos os Registros';
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao salvar os registros: ' + error.message);
+                
+                // Reabilitar botão
+                btnSaveAll.disabled = false;
+                btnSaveAll.innerHTML = '<i class="bi bi-save"></i> Salvar Todos os Registros';
+            });
+        });
+        
+        // Garantir que sempre haja pelo menos uma linha na tabela
+        if (tableBody.querySelectorAll('.record-row').length === 0) {
+            addNewRow();
+        }
+    });
+</script>
+{% endblock %}

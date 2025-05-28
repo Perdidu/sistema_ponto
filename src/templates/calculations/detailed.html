@@ -1,0 +1,143 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Cálculo Detalhado - Sistema de Controle de Ponto{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Cálculo Detalhado</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('calculation.list_calculations') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar para Cálculos
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Informações do Cálculo</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <p><strong>Funcionário:</strong> {{ calculation.employee.name }}</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Período:</strong> {{ calculation.period_start.strftime('%d/%m/%Y') }} a {{ calculation.period_end.strftime('%d/%m/%Y') }}</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Valor Total:</strong> R$ {{ "%.2f"|format(calculation.total_value) }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Detalhamento Diário</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Dia da Semana</th>
+                        <th>Horas Regulares</th>
+                        <th>Horas Extras 50%</th>
+                        <th>Horas Extras 100%</th>
+                        <th>Horas Noturnas</th>
+                        <th>Interjornada</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day_detail in daily_details %}
+                        <tr>
+                            <td>{{ day_detail.date.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ day_detail.weekday }}</td>
+                            <td>{{ "%.2f"|format(day_detail.regular_hours) }}</td>
+                            <td>{{ "%.2f"|format(day_detail.overtime_50) }}</td>
+                            <td>{{ "%.2f"|format(day_detail.overtime_100) }}</td>
+                            <td>{{ "%.2f"|format(day_detail.night_hours) }}</td>
+                            <td>{{ "%.2f"|format(day_detail.interjournada_hours) }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">Nenhum registro de ponto encontrado para este período.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-dark">
+                        <th colspan="2">Total</th>
+                        <th>{{ "%.2f"|format(calculation.regular_hours) }}</th>
+                        <th>{{ "%.2f"|format(calculation.overtime_50) }}</th>
+                        <th>{{ "%.2f"|format(calculation.overtime_100) }}</th>
+                        <th>{{ "%.2f"|format(calculation.night_hours) }}</th>
+                        <th>{{ "%.2f"|format(calculation.interjournada_hours) }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Resumo Financeiro</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Quantidade (h)</th>
+                        <th>Valor Unitário</th>
+                        <th>Valor Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Horas Extras 50%</td>
+                        <td>{{ "%.2f"|format(calculation.overtime_50) }}</td>
+                        <td>R$ {{ "%.2f"|format(calculation.employee.salary / 220 * 1.5) }}</td>
+                        <td>R$ {{ "%.2f"|format(calculation.overtime_50_value) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Horas Extras 100%</td>
+                        <td>{{ "%.2f"|format(calculation.overtime_100) }}</td>
+                        <td>R$ {{ "%.2f"|format(calculation.employee.salary / 220 * 2.0) }}</td>
+                        <td>R$ {{ "%.2f"|format(calculation.overtime_100_value) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Adicional Noturno</td>
+                        <td>{{ "%.2f"|format(calculation.night_hours) }}</td>
+                        <td>R$ {{ "%.2f"|format(calculation.employee.salary / 220 * 0.2) }}</td>
+                        <td>R$ {{ "%.2f"|format(calculation.night_hours_value) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Interjornada</td>
+                        <td>{{ "%.2f"|format(calculation.interjournada_hours) }}</td>
+                        <td>R$ {{ "%.2f"|format(calculation.employee.salary / 220 * 1.5) }}</td>
+                        <td>R$ {{ "%.2f"|format(calculation.interjournada_value) }}</td>
+                    </tr>
+                    <tr>
+                        <td>DSR sobre Horas Extras</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>R$ {{ "%.2f"|format(calculation.dsr_value) }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="table-dark">
+                        <th colspan="3">Total</th>
+                        <th>R$ {{ "%.2f"|format(calculation.total_value) }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

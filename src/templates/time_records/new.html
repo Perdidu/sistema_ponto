@@ -1,0 +1,137 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Novo Registro de Ponto - Sistema de Controle de Ponto{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Novo Registro de Ponto</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('time_record.list_time_records') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form action="{{ url_for('time_record.create_time_record') }}" method="post" id="timeRecordForm">
+                    <div class="mb-3">
+                        <label for="employee_id" class="form-label">Funcionário</label>
+                        <select class="form-select" id="employee_id" name="employee_id" required>
+                            <option value="">Selecione um funcionário</option>
+                            {% for employee in employees %}
+                                <option value="{{ employee.id }}" {% if request.args.get('employee_id')|int == employee.id %}selected{% endif %}>{{ employee.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Data</label>
+                        <input type="date" class="form-control" id="date" name="date" value="{{ today }}" required>
+                    </div>
+                    
+                    <!-- Período Regular -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Período Regular</h5>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" name="periods[0][period_type]" value="regular">
+                            <div class="mb-3">
+                                <label for="entry_time" class="form-label">Horário de Entrada</label>
+                                <input type="time" class="form-control" id="entry_time" name="periods[0][entry_time]">
+                            </div>
+                            <div class="mb-3">
+                                <label for="lunch_start" class="form-label">Horário de Saída para Almoço</label>
+                                <input type="time" class="form-control" id="lunch_start" name="periods[0][lunch_start]">
+                            </div>
+                            <div class="mb-3">
+                                <label for="lunch_end" class="form-label">Horário de Retorno do Almoço</label>
+                                <input type="time" class="form-control" id="lunch_end" name="periods[0][lunch_end]">
+                            </div>
+                            <div class="mb-3">
+                                <label for="exit_time" class="form-label">Horário de Saída</label>
+                                <input type="time" class="form-control" id="exit_time" name="periods[0][exit_time]">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Container para períodos adicionais -->
+                    <div id="additional-periods-container">
+                        <!-- Períodos adicionais serão inseridos aqui via JavaScript -->
+                    </div>
+                    
+                    <!-- Botão para adicionar período adicional -->
+                    <div class="mb-3">
+                        <button type="button" id="add-period-btn" class="btn btn-outline-primary">
+                            <i class="bi bi-plus-circle"></i> Adicionar Período Adicional
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let periodCounter = 1;
+        
+        // Função para adicionar um novo período
+        document.getElementById('add-period-btn').addEventListener('click', function() {
+            const container = document.getElementById('additional-periods-container');
+            
+            // Criar um novo card para o período adicional
+            const periodCard = document.createElement('div');
+            periodCard.className = 'card mb-3 period-card';
+            periodCard.id = `period-${periodCounter}`;
+            
+            // HTML para o novo período
+            periodCard.innerHTML = `
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Período Adicional ${periodCounter}</h5>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-period" data-period="${periodCounter}">
+                        <i class="bi bi-trash"></i> Remover
+                    </button>
+                </div>
+                <div class="card-body">
+                    <input type="hidden" name="periods[${periodCounter}][period_type]" value="extra">
+                    <div class="mb-3">
+                        <label class="form-label">Horário de Entrada</label>
+                        <input type="time" class="form-control" name="periods[${periodCounter}][entry_time]">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Horário de Saída</label>
+                        <input type="time" class="form-control" name="periods[${periodCounter}][exit_time]">
+                    </div>
+                </div>
+            `;
+            
+            // Adicionar o novo período ao container
+            container.appendChild(periodCard);
+            
+            // Adicionar evento para remover o período
+            periodCard.querySelector('.remove-period').addEventListener('click', function() {
+                const periodId = this.getAttribute('data-period');
+                document.getElementById(`period-${periodId}`).remove();
+            });
+            
+            // Incrementar o contador de períodos
+            periodCounter++;
+        });
+    });
+</script>
+{% endblock %}

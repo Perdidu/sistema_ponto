@@ -1,0 +1,89 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Detalhes do Registro de Ponto - Sistema de Controle de Ponto{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Detalhes do Registro de Ponto</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('time_record.list_time_records') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+            <a href="{{ url_for('time_record.edit_time_record', id=work_day.id) }}" class="btn btn-sm btn-outline-warning">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Registro do dia {{ work_day.date.strftime('%d/%m/%Y') }}</h5>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Funcionário:</strong> {{ work_day.employee.name }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>ID do Registro:</strong> {{ work_day.id }}
+                    </div>
+                </div>
+                
+                <h6 class="mt-4 mb-3">Períodos de Trabalho</h6>
+                
+                {% for period in work_day.work_periods %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            {% if period.period_type == 'regular' %}
+                                <strong>Período Regular</strong>
+                            {% else %}
+                                <strong>Período Adicional {{ loop.index0 }}</strong>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Entrada:</strong> {{ period.entry_time.strftime('%H:%M') if period.entry_time else '-' }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Saída:</strong> {{ period.exit_time.strftime('%H:%M') if period.exit_time else '-' }}
+                                </div>
+                            </div>
+                            
+                            {% if period.period_type == 'regular' and (period.lunch_start or period.lunch_end) %}
+                                <div class="row mt-2">
+                                    <div class="col-md-6">
+                                        <strong>Saída Almoço:</strong> {{ period.lunch_start.strftime('%H:%M') if period.lunch_start else '-' }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Retorno Almoço:</strong> {{ period.lunch_end.strftime('%H:%M') if period.lunch_end else '-' }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                
+                {% if work_day.notes %}
+                <div class="row mb-3 mt-4">
+                    <div class="col-md-12">
+                        <strong>Observações:</strong>
+                        <p>{{ work_day.notes }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Data de Cadastro:</strong> {{ work_day.created_at.strftime('%d/%m/%Y %H:%M') }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Última Atualização:</strong> {{ work_day.updated_at.strftime('%d/%m/%Y %H:%M') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

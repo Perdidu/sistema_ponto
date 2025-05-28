@@ -1,0 +1,117 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Cálculos - Sistema de Controle de Ponto{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Cálculos</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('calculation.new_calculation') }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-plus"></i> Novo Cálculo
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Filtros</h5>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('calculation.list_calculations') }}" method="get">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="employee_id" class="form-label">Funcionário</label>
+                    <select class="form-select" id="employee_id" name="employee_id">
+                        <option value="">Todos</option>
+                        {% for emp in employees %}
+                            <option value="{{ emp.id }}" {% if employee_id == emp.id %}selected{% endif %}>{{ emp.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="start_date" class="form-label">Data Inicial</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="end_date" class="form-label">Data Final</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Funcionário</th>
+                <th>Período</th>
+                <th>Horas Extras 50%</th>
+                <th>Horas Extras 100%</th>
+                <th>Horas Noturnas</th>
+                <th>Interjornada</th>
+                <th>Valor Total</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if calculations %}
+                {% for calc in calculations %}
+                    <tr>
+                        <td>{{ calc.id }}</td>
+                        <td>{{ calc.employee.name }}</td>
+                        <td>{{ calc.period_start.strftime('%d/%m/%Y') }} a {{ calc.period_end.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ "%.2f"|format(calc.overtime_50) }}</td>
+                        <td>{{ "%.2f"|format(calc.overtime_100) }}</td>
+                        <td>{{ "%.2f"|format(calc.night_hours) }}</td>
+                        <td>{{ "%.2f"|format(calc.interjournada_hours) }}</td>
+                        <td>R$ {{ "%.2f"|format(calc.total_value) }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('calculation.show_calculation', id=calc.id) }}" class="btn btn-info text-white">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if calc.id != 0 %}
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ calc.id }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                
+                                <!-- Modal de confirmação de exclusão -->
+                                <div class="modal fade" id="deleteModal{{ calc.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ calc.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ calc.id }}">Confirmar Exclusão</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Tem certeza que deseja excluir o cálculo do período {{ calc.period_start.strftime('%d/%m/%Y') }} a {{ calc.period_end.strftime('%d/%m/%Y') }} do funcionário <strong>{{ calc.employee.name }}</strong>?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <form action="{{ url_for('calculation.delete_calculation', id=calc.id) }}" method="post">
+                                                    <button type="submit" class="btn btn-danger">Excluir</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="9" class="text-center">Nenhum cálculo encontrado para os filtros selecionados.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
