@@ -330,13 +330,14 @@ def calculate_multiple_periods(employee_id, period_start, period_end):
     overtime_50_value = overtime_50 * hourly_rate * Decimal('1.5')
     overtime_100_value = overtime_100 * hourly_rate * Decimal('2.0')
     night_hours_value = night_hours * hourly_rate * Decimal('0.2')  # 20% adicional noturno
+    interjournada_value = interjournada_hours * hourly_rate * Decimal('1.5')
     
     # Calcular DSR sobre horas extras
     total_days = (period_end - period_start).days + 1
     dsr_value = calculate_dsr(overtime_50_value, overtime_100_value, workdays, total_days)
     
     # Calcular valor total
-    total_value = overtime_50_value + overtime_100_value + night_hours_value + dsr_value
+    total_value = overtime_50_value + overtime_100_value + night_hours_value + interjournada_value + dsr_value
     
     # Retornar resultados
     return {
@@ -345,6 +346,7 @@ def calculate_multiple_periods(employee_id, period_start, period_end):
         'overtime_100': float(overtime_100),
         'night_hours': float(night_hours),
         'interjournada_hours': float(interjournada_hours),
+        'interjournada_value': float(interjournada_value),
         'overtime_50_value': float(overtime_50_value),
         'overtime_100_value': float(overtime_100_value),
         'night_hours_value': float(night_hours_value),
