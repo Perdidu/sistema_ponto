@@ -67,11 +67,11 @@ def list_calculations():
                 overtime_50=calculation_results['overtime_50'],
                 overtime_100=calculation_results['overtime_100'],
                 night_hours=calculation_results['night_hours'],
-                interjournada_hours=calculation_results['interjournada_hours'],
+                interjornada_hours=calculation_results['interjornada_hours'],
                 overtime_50_value=calculation_results['overtime_50_value'],
                 overtime_100_value=calculation_results['overtime_100_value'],
                 night_hours_value=calculation_results['night_hours_value'],
-                interjournada_value=calculation_results['interjournada_value'],
+                interjornada_value=calculation_results['interjornada_value'],
                 dsr_value=calculation_results['dsr_value'],
                 total_value=calculation_results['total_value']
             )
@@ -150,11 +150,11 @@ def create_calculation():
             overtime_50=calculation_results['overtime_50'],
             overtime_100=calculation_results['overtime_100'],
             night_hours=calculation_results['night_hours'],
-            interjournada_hours=calculation_results['interjournada_hours'],
+            interjornada_hours=calculation_results['interjornada_hours'],
             overtime_50_value=calculation_results['overtime_50_value'],
             overtime_100_value=calculation_results['overtime_100_value'],
             night_hours_value=calculation_results['night_hours_value'],
-            interjournada_value=calculation_results['interjournada_value'],
+            interjornada_value=calculation_results['interjornada_value'],
             dsr_value=calculation_results['dsr_value'],
             total_value=calculation_results['total_value']
         )
@@ -219,7 +219,7 @@ def detailed_calculation(id):
                 day_ot100 = day_overtime - 2.0
             
             # Calcular interjornada
-            interjournada_hours = 0
+            interjornada_hours = 0
             
             # Encontrar o último horário de saída do dia
             last_exit_time = None
@@ -249,7 +249,7 @@ def detailed_calculation(id):
                         if interjornada_seconds < interjornada_hours_required:
                             # Calcular horas faltantes de interjornada
                             missing_hours = (interjornada_hours_required - interjornada_seconds) / 3600
-                            interjournada_hours = missing_hours
+                            interjornada_hours = missing_hours
             
             # Adicionar detalhes do dia
             daily_details.append({
@@ -259,7 +259,7 @@ def detailed_calculation(id):
                 'overtime_50': day_ot50,
                 'overtime_100': day_ot100,
                 'night_hours': day_night,
-                'interjournada_hours': interjournada_hours
+                'interjornada_hours': interjornada_hours
             })
             
             # Atualizar para próxima iteração
@@ -274,7 +274,7 @@ def detailed_calculation(id):
                 'overtime_50': 0,
                 'overtime_100': 0,
                 'night_hours': 0,
-                'interjournada_hours': 0
+                'interjornada_hours': 0
             })
         
         # Avançar para o próximo dia
@@ -325,11 +325,11 @@ def detailed_calculations():
             'overtime_50': 0,
             'overtime_100': 0,
             'night_hours': 0,
-            'interjournada_hours': 0,
+            'interjornada_hours': 0,
             'overtime_50_value': 0,
             'overtime_100_value': 0,
             'night_hours_value': 0,
-            'interjournada_value': 0,
+            'interjornada_value': 0,
             'dsr_value': 0,
             'total_value': 0
         }
@@ -388,7 +388,7 @@ def detailed_calculations():
                         day_ot100 = day_overtime_decimal - Decimal('2.0')
                     
                     # Calcular interjornada
-                    interjournada_hours = 0
+                    interjornada_hours = 0
                     
                     # Encontrar o último horário de saída do dia
                     last_exit_time = None
@@ -418,7 +418,7 @@ def detailed_calculations():
                                 if interjornada_seconds < interjornada_hours_required:
                                     # Calcular horas faltantes de interjornada
                                     missing_hours = (interjornada_hours_required - interjornada_seconds) / 3600
-                                    interjournada_hours = missing_hours
+                                    interjornada_hours = missing_hours
                     
                     # Adicionar detalhes do dia
                     daily_details.append({
@@ -429,7 +429,7 @@ def detailed_calculations():
                         'overtime_50': day_ot50,
                         'overtime_100': day_ot100,
                         'night_hours': day_night,
-                        'interjournada_hours': interjournada_hours
+                        'interjornada_hours': interjornada_hours
                     })
                     
                     # Atualizar totais
@@ -437,7 +437,7 @@ def detailed_calculations():
                     totals['overtime_50'] += day_ot50
                     totals['overtime_100'] += day_ot100
                     totals['night_hours'] += day_night
-                    totals['interjournada_hours'] += interjournada_hours
+                    totals['interjornada_hours'] += interjornada_hours
                     
                     # Atualizar para próxima iteração
                     prev_exit_time = last_exit_time
@@ -453,7 +453,7 @@ def detailed_calculations():
                             'overtime_50': 0,
                             'overtime_100': 0,
                             'night_hours': 0,
-                            'interjournada_hours': 0
+                            'interjornada_hours': 0
                         })
                 
                 # Avançar para o próximo dia
@@ -470,7 +470,7 @@ def detailed_calculations():
                 totals['overtime_50_value'] = float(totals['overtime_50']) * hourly_rate * 1.5
                 totals['overtime_100_value'] = float(totals['overtime_100']) * hourly_rate * 2.0
                 totals['night_hours_value'] = float(totals['night_hours']) * hourly_rate * 0.2
-                totals['interjournada_value'] = float(totals['interjournada_hours']) * hourly_rate * 1.5
+                totals['interjornada_value'] = float(totals['interjornada_hours']) * hourly_rate * 1.5
                 
                 # Calcular DSR sobre horas extras
                 total_work_days = len([d for d in daily_details if d['regular_hours'] > 0 or d['overtime_50'] > 0 or d['overtime_100'] > 0])
@@ -486,7 +486,7 @@ def detailed_calculations():
                     totals['overtime_50_value'] + 
                     totals['overtime_100_value'] + 
                     totals['night_hours_value'] + 
-                    totals['interjournada_value'] + 
+                    totals['interjornada_value'] +
                     totals['dsr_value']
                 )
         
@@ -526,11 +526,11 @@ def detailed_calculations():
                                 'overtime_50': 0,
                                 'overtime_100': 0,
                                 'night_hours': 0,
-                                'interjournada_hours': 0,
+                                'interjornada_hours': 0,
                                 'overtime_50_value': 0,
                                 'overtime_100_value': 0,
                                 'night_hours_value': 0,
-                                'interjournada_value': 0,
+                                'interjornada_value': 0,
                                 'dsr_value': 0,
                                 'total_value': 0
                             })

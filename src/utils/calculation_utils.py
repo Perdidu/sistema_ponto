@@ -209,7 +209,7 @@ def calculate_multiple_periods(employee_id, period_start, period_end):
     overtime_50 = Decimal('0.0')
     overtime_100 = Decimal('0.0')
     night_hours = Decimal('0.0')
-    interjournada_hours = Decimal('0.0')
+    interjornada_hours = Decimal('0.0')
     
     # Calcular horas trabalhadas por dia
     prev_exit_time = None
@@ -228,7 +228,7 @@ def calculate_multiple_periods(employee_id, period_start, period_end):
             'overtime_50': Decimal('0.0'),
             'overtime_100': Decimal('0.0'),
             'night_hours': Decimal('0.0'),
-            'interjournada_hours': Decimal('0.0'),
+            'interjornada_hours': Decimal('0.0'),
             'total_overtime_hours': Decimal('0.0'),
             'is_weekend': is_weekend(current_date),
             'is_holiday': is_holiday(current_date)
@@ -281,10 +281,10 @@ def calculate_multiple_periods(employee_id, period_start, period_end):
                             # Calcular horas faltantes de interjornada
                             missing_hours = (interjornada_hours_required - interjornada_seconds) / 3600
                             day_interjornada = Decimal(str(missing_hours)).quantize(Decimal('0.01'))
-                            interjournada_hours += day_interjornada
+                            interjornada_hours += day_interjornada
             
             # Armazenar detalhes da interjornada para o dia atual
-            daily_details[current_date]['interjournada_hours'] = day_interjornada
+            daily_details[current_date]['interjornada_hours'] = day_interjornada
             
             # Total de horas extras do dia (incluindo interjornada)
             total_day_overtime = day_overtime + day_interjornada
@@ -344,7 +344,7 @@ def calculate_multiple_periods(employee_id, period_start, period_end):
         'overtime_50': float(overtime_50),
         'overtime_100': float(overtime_100),
         'night_hours': float(night_hours),
-        'interjournada_hours': float(interjournada_hours),
+        'interjornada_hours': float(interjornada_hours),
         'overtime_50_value': float(overtime_50_value),
         'overtime_100_value': float(overtime_100_value),
         'night_hours_value': float(night_hours_value),
