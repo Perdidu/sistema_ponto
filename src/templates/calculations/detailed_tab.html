@@ -67,7 +67,7 @@
                                 <td>{{ "%.2f"|format(detail.overtime_50) }}</td>
                                 <td>{{ "%.2f"|format(detail.overtime_100) }}</td>
                                 <td>{{ "%.2f"|format(detail.night_hours) }}</td>
-                                <td>{{ "%.2f"|format(detail.interjournada_hours) }}</td>
+                                <td>{{ "%.2f"|format(detail.interjornada_hours) }}</td>
                             </tr>
                         {% endfor %}
                     {% else %}
@@ -84,7 +84,7 @@
                         <th>{{ "%.2f"|format(totals.overtime_50) }}</th>
                         <th>{{ "%.2f"|format(totals.overtime_100) }}</th>
                         <th>{{ "%.2f"|format(totals.night_hours) }}</th>
-                        <th>{{ "%.2f"|format(totals.interjournada_hours) }}</th>
+                        <th>{{ "%.2f"|format(totals.interjornada_hours) }}</th>
                     </tr>
                 </tfoot>
                 {% endif %}
@@ -126,8 +126,8 @@
                     </tr>
                     <tr>
                         <td>Interjornada</td>
-                        <td>{{ "%.2f"|format(totals.interjournada_hours) }}</td>
-                        <td>R$ {{ "%.2f"|format(totals.interjournada_value) }}</td>
+                        <td>{{ "%.2f"|format(totals.interjornada_hours) }}</td>
+                        <td>R$ {{ "%.2f"|format(totals.interjornada_value) }}</td>
                     </tr>
                     <tr>
                         <td>DSR sobre Horas Extras</td>

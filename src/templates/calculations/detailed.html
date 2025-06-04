@@ -60,7 +60,7 @@
                             <td>{{ "%.2f"|format(day_detail.overtime_50) }}</td>
                             <td>{{ "%.2f"|format(day_detail.overtime_100) }}</td>
                             <td>{{ "%.2f"|format(day_detail.night_hours) }}</td>
-                            <td>{{ "%.2f"|format(day_detail.interjournada_hours) }}</td>
+                            <td>{{ "%.2f"|format(day_detail.interjornada_hours) }}</td>
                         </tr>
                     {% else %}
                         <tr>
@@ -75,7 +75,7 @@
                         <th>{{ "%.2f"|format(calculation.overtime_50) }}</th>
                         <th>{{ "%.2f"|format(calculation.overtime_100) }}</th>
                         <th>{{ "%.2f"|format(calculation.night_hours) }}</th>
-                        <th>{{ "%.2f"|format(calculation.interjournada_hours) }}</th>
+                        <th>{{ "%.2f"|format(calculation.interjornada_hours) }}</th>
                     </tr>
                 </tfoot>
             </table>
@@ -119,9 +119,9 @@
                     </tr>
                     <tr>
                         <td>Interjornada</td>
-                        <td>{{ "%.2f"|format(calculation.interjournada_hours) }}</td>
+                        <td>{{ "%.2f"|format(calculation.interjornada_hours) }}</td>
                         <td>R$ {{ "%.2f"|format(calculation.employee.salary / 220 * 1.5) }}</td>
-                        <td>R$ {{ "%.2f"|format(calculation.interjournada_value) }}</td>
+                        <td>R$ {{ "%.2f"|format(calculation.interjornada_value) }}</td>
                     </tr>
                     <tr>
                         <td>DSR sobre Horas Extras</td>
